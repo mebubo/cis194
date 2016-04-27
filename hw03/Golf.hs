@@ -7,3 +7,25 @@ skips xs = [everyNth n n xs | n <- [1..length xs]]
         everyNth _ _ [] = []
         everyNth 1 n (x:xs) = x : (everyNth n n xs)
         everyNth i n (x:xs) = everyNth (i-1) n xs
+
+localMaxima :: [Integer] -> [Integer]
+localMaxima (x:y:z:zs)
+    | x <= y && y >= z = y : rest
+    | otherwise = rest
+    where rest = localMaxima (y:z:zs)
+localMaxima _ = []
+
+histogram :: [Integer] -> String
+histogram xs =
+    let
+        countOccur n = fromIntegral . length . filter (==n)
+        occurs = [countOccur n xs | n <- [0..9]]
+        nums = foldr (++) [] [show n | n <- [0..9]]
+        separator = take 10 $ repeat '='
+        hist xs | all (<=0) xs = []
+                | otherwise = [if x > 0 then '*' else ' ' | x <- xs]
+                    : hist (map (\x -> x - 1) xs)
+    in
+        unlines . reverse $ [nums, separator] ++ hist occurs
+
+

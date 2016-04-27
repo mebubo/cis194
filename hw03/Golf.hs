@@ -22,10 +22,9 @@ histogram xs =
         occurs = [countOccur n xs | n <- [0..9]]
         nums = foldr (++) [] [show n | n <- [0..9]]
         separator = take 10 $ repeat '='
-        hist xs | all (<=0) xs = []
-                | otherwise = [if x > 0 then '*' else ' ' | x <- xs]
-                    : hist (map (\x -> x - 1) xs)
+        lines' occ = [line occ n | n <- [1..(maximum occ)]]
+        line occ n = [if x >= n then '*' else ' ' | x <- occ]
     in
-        unlines . reverse $ [nums, separator] ++ hist occurs
+        unlines . reverse $ nums:separator:lines' occurs
 
 

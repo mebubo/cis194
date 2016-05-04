@@ -6,6 +6,7 @@ module Calc where
 import ExprT
 import Parser
 import qualified StackVM
+import qualified Data.Map as M
 
 eval :: ExprT -> Integer
 eval (Lit x) = x
@@ -77,3 +78,37 @@ execProgram (Just x) = StackVM.stackVM x
 
 compile :: String -> Maybe StackVM.Program
 compile = parseExp lit add mul
+
+class HasVars a where
+    var :: String -> a
+
+data VarExprT = VLit Integer
+              | Var String
+              | VAdd VarExprT VarExprT
+              | VMul VarExprT VarExprT
+    deriving (Show)
+
+instance Expr VarExprT where
+    lit = VLit
+    add = VAdd
+    mul = VMul
+
+instance HasVars VarExprT where
+    var = Var
+
+instance Expr (M.Map String Integer -> Maybe Integer) where
+   lit x _ = Just x
+   add f1 f2 m = do r1 <- f1 m
+                    r2 <- f2 m
+                    return (r1 + r2)
+   mul f1 f2 m = do r1 <- f1 m
+                    r2 <- f2 m
+                    return (r1 * r2)
+
+instance HasVars (M.Map String Integer -> Maybe Integer) where
+    var = M.lookup
+
+withVars :: [(String, Integer)]
+         -> (M.Map String Integer -> Maybe Integer)
+         -> Maybe Integer
+withVars vs exp = exp $ M.fromList vs

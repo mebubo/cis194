@@ -29,3 +29,23 @@ streamMap f (Cons x xs) = Cons (f x) (streamMap f xs)
 
 streamFromSeed :: (a -> a) -> a -> Stream a
 streamFromSeed f x = Cons x (streamFromSeed f (f x))
+
+nats :: Stream Integer
+nats = streamFromSeed (+1) 0
+
+ruler :: Stream Integer
+ruler = iter 1
+    where iter :: Integer -> Stream Integer
+          iter n = Cons (biggestPowerOfTwoDivisor n) (iter (n+1))
+          intLog :: Integer -> Integer
+          intLog n = ceiling $ logBase 2 (fromIntegral n)
+          biggestPowerOfTwoDivisor :: Integer -> Integer
+          biggestPowerOfTwoDivisor n = last [m | m <- [0..(intLog n)]
+                                               , n `mod` 2^m == 0]
+
+interleaveStreams :: Stream a -> Stream a -> Stream a
+interleaveStreams (Cons x xs) ys = Cons x (interleaveStreams ys xs)
+
+ruler' :: Stream Integer
+ruler' = iter 0
+    where iter n = interleaveStreams (streamRepeat n) (iter (n+1))

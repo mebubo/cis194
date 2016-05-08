@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-missing-methods #-}
+
 module Fibonacci where
 
 fib :: Integer -> Integer
@@ -49,3 +52,19 @@ interleaveStreams (Cons x xs) ys = Cons x (interleaveStreams ys xs)
 ruler' :: Stream Integer
 ruler' = iter 0
     where iter n = interleaveStreams (streamRepeat n) (iter (n+1))
+
+x :: Stream Integer
+x = Cons 0 (Cons 1 (streamRepeat 0))
+
+instance Num (Stream Integer) where
+    fromInteger n = Cons n (streamRepeat 0)
+    negate = streamMap (0-)
+    Cons x xs + Cons y ys = Cons (x+y) (xs + ys)
+    Cons a0 a' * b@(Cons b0 b') = Cons (a0*b0) (streamMap (*a0) b' + a'*b)
+
+instance Fractional (Stream Integer) where
+    Cons a0 a' / Cons b0 b' = q
+        where q = Cons (a0 `div` b0) (streamMap (`div` b0) (a' - q * b'))
+
+fibs3 :: Stream Integer
+fibs3 = x / (1 - x - x^2)

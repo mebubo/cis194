@@ -68,3 +68,18 @@ instance Fractional (Stream Integer) where
 
 fibs3 :: Stream Integer
 fibs3 = x / (1 - x - x^2)
+
+data Matrix = Matrix Integer Integer Integer Integer
+
+instance Num Matrix where
+    Matrix a00 a01 a10 a11 * Matrix b00 b01 b10 b11 = Matrix (a00*b00 + a01*b10)
+                                                             (a00*b01 + a01*b11)
+                                                             (a10*b00 + a11*b10)
+                                                             (a10*b10 + a11*b11)
+
+f :: Matrix
+f = Matrix 1 1 1 0
+fib4 :: Integer -> Integer
+fib4 0 = 0
+fib4 n = extract (f^(n-1))
+    where extract (Matrix a _ _ _) = a

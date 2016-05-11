@@ -1,6 +1,7 @@
 module JoinList where
 
 import Sized
+import Scrabble
 
 data JoinList m a = Empty
                   | Single m a
@@ -46,3 +47,11 @@ takeJ n x@(Append m l r) | n >= size' = x
     where size' = getSize $ size m
           sizeLeft = getSize $ size $ tag l
 
+scoreLine :: String -> JoinList Score String
+scoreLine line = iter ws
+    where ws = words line
+          iter :: [String] -> JoinList Score String
+          iter [] = Empty
+          iter [x] = Single (scoreString x) x
+          iter xs = iter (take half xs) +++ iter (drop half xs)
+              where half = length xs `div` 2

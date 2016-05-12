@@ -1,7 +1,10 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module JoinList where
 
 import Sized
 import Scrabble
+import Buffer
 
 data JoinList m a = Empty
                   | Single m a
@@ -15,6 +18,11 @@ tag :: Monoid m => JoinList m a -> m
 tag Empty = mempty
 tag (Single m _) = m
 tag (Append m _ _) = m
+
+jlToList :: JoinList m a -> [a]
+jlToList Empty = []
+jlToList (Single _ a) = [a]
+jlToList (Append _ l r) = jlToList l ++ jlToList r
 
 indexJ :: (Sized b, Monoid b) =>
     Int -> JoinList b a -> Maybe a
@@ -55,3 +63,13 @@ scoreLine line = iter ws
           iter [x] = Single (scoreString x) x
           iter xs = iter (take half xs) +++ iter (drop half xs)
               where half = length xs `div` 2
+
+instance Buffer (JoinList (Score, Size) String)
+    where
+        toString = unlines . jlToList
+        fromString str = iter ws
+            where ws = words str
+                  iter [] = Empty
+                  iter [x] = Single (scoreString x, 1) x
+                  iter xs = iter (take half xs) +++ iter (drop half xs)
+                    where half = length xs `div` 2

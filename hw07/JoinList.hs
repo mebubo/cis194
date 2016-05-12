@@ -30,7 +30,7 @@ indexJ n Empty = Nothing
 indexJ n (Single _ x) | n == 0 = Just x
                       | otherwise = Nothing
 indexJ n (Append m l r) | n < 0 || n >= size' = Nothing
-                        | n < size' = indexJ n l
+                        | n < sizeLeft = indexJ n l
                         | otherwise = indexJ (n-sizeLeft) r
     where size' = getSize $ size m
           sizeLeft = getSize $ size $ tag l
@@ -67,9 +67,13 @@ scoreLine line = iter ws
 instance Buffer (JoinList (Score, Size) String)
     where
         toString = unlines . jlToList
-        fromString str = iter ws
-            where ws = words str
+        fromString str = iter ls
+            where ls = lines str
                   iter [] = Empty
                   iter [x] = Single (scoreString x, 1) x
                   iter xs = iter (take half xs) +++ iter (drop half xs)
                     where half = length xs `div` 2
+        line = indexJ
+        replaceLine n l j = takeJ n j +++ fromString l +++ dropJ (n+1) j
+        numLines = getSize . snd . tag
+        value = getScore . fst . tag

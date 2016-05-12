@@ -34,7 +34,10 @@ score 'w' = Score 4
 score 'x' = Score 8
 score 'y' = Score 4
 score 'z' = Score 10
+score _ = Score 0
 
 scoreString :: String -> Score
 scoreString = foldr (mappend . score) mempty
 
+getScore :: Score -> Int
+getScore (Score x) = x

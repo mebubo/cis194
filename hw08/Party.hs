@@ -31,3 +31,17 @@ maxFun :: Tree Employee -> GuestList
 maxFun tree = max with without
   where
     (with, without) = treeFold nextLevel mempty tree
+
+main :: IO ()
+main = readFile "company.txt" >>= putStr . transfrom
+
+transfrom :: String -> String
+transfrom s = formatGuestList $ maxFun company
+  where
+    company :: Tree Employee
+    company = read s
+    formatGuestList :: GuestList -> String
+    formatGuestList (GL es fun) = total ++ guests
+      where
+        total = "Total fun: " ++ show fun ++ "\n"
+        guests = unlines $ map empName es

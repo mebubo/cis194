@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 {- CIS 194 HW 10
    due Monday, 1 April
 -}
@@ -57,3 +58,31 @@ posInt = Parser f
 ------------------------------------------------------------
 -- Your code goes below here
 ------------------------------------------------------------
+
+first :: (a -> b) -> (a, c) -> (b, c)
+first h (a, c) = (h a, c)
+
+instance Functor Parser where
+  fmap :: (a -> b) -> Parser a -> Parser b
+  fmap h (Parser f) = Parser (fmap (first h) . f)
+
+instance Applicative Parser where
+  pure :: a -> Parser a
+  pure a = Parser (\s -> Just (a, s))
+  (<*>) :: Parser (a -> b) -> Parser a -> Parser b
+  Parser ab <*> Parser a = Parser (\s ->
+      case ab s of
+        Nothing -> Nothing
+        Just (ab', s') -> fmap (first ab') (a s'))
+
+abParser :: Parser (Char, Char)
+abParser = (,) <$> char 'a' <*> char 'b'
+
+abParser_ :: Parser ()
+abParser_ = ignore <$> abParser
+  where
+    ignore _ = ()
+
+intPair :: Parser [Integer]
+intPair = f <$> posInt <*> char ' ' <*> posInt
+  where f a _ b = [a, b]

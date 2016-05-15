@@ -2,6 +2,7 @@ module Party where
 
 import Employee
 import Data.Tree
+import Data.List (sort)
 
 glCons :: Employee -> GuestList -> GuestList
 glCons e (GL es f) = GL (e:es) (f + empFun e)
@@ -13,24 +14,21 @@ instance Monoid GuestList where
 moreFun :: GuestList -> GuestList -> GuestList
 moreFun l1 l2 = if l1 > l2 then l1 else l2
 
-treeFold :: (a -> [b] -> b) -> b -> Tree a -> b
-treeFold f seed Node {rootLabel = rl, subForest = sf} =
-  f rl (map (treeFold f seed) sf)
+treeFold :: (a -> [b] -> b) -> Tree a -> b
+treeFold f Node {rootLabel = rl, subForest = sf} =
+  f rl (map (treeFold f) sf)
 
 nextLevel :: Employee -> [(GuestList, GuestList)] -> (GuestList, GuestList)
 nextLevel boss gls = (withBoss', withoutBoss')
   where
     (withBoss, withoutBoss) = unzip gls
-    withoutBoss' = maximum' withBoss
-    withBoss' = glCons boss (maximum' withoutBoss)
-    maximum' :: (Ord a, Monoid a) => [a] -> a
-    maximum' [] = mempty
-    maximum' xs = maximum xs
+    withoutBoss' = mconcat withBoss
+    withBoss' = glCons boss (mconcat withoutBoss)
 
 maxFun :: Tree Employee -> GuestList
 maxFun tree = max with without
   where
-    (with, without) = treeFold nextLevel mempty tree
+    (with, without) = treeFold nextLevel tree
 
 main :: IO ()
 main = readFile "company.txt" >>= putStr . transfrom
@@ -44,4 +42,4 @@ transfrom s = formatGuestList $ maxFun company
     formatGuestList (GL es fun) = total ++ guests
       where
         total = "Total fun: " ++ show fun ++ "\n"
-        guests = unlines $ map empName es
+        guests = unlines $ sort $ map empName es

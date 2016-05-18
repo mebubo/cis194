@@ -12,10 +12,10 @@ import Control.Applicative
 ------------------------------------------------------------
 
 zeroOrMore :: Parser a -> Parser [a]
-zeroOrMore p = pure [] <|> oneOrMore p
+zeroOrMore p = oneOrMore p <|> pure []
 
 oneOrMore :: Parser a -> Parser [a]
-oneOrMore p = flip (:) <$> zeroOrMore p <*> p
+oneOrMore p = (:) <$> p <*> zeroOrMore p
 
 ------------------------------------------------------------
 --  2. Utilities

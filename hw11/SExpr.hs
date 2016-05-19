@@ -63,4 +63,4 @@ atom = N <$> posInt <|> I <$> ident
 
 sexpr :: Parser SExpr
 sexpr = A <$> atom <|> Comb <$> (openingBrace *> sexprs <* closingBrace)
-  where sexprs = (:) <$> zeroOrMoreSpaces *> sexpr <*> zeroOrMore (oneOrMoreSpaces <*> sexpr) <* zeroOrMoreSpaces
+  where sexprs = (:) <$> (zeroOrMoreSpaces *> sexpr) <*> zeroOrMore (oneOrMoreSpaces *> sexpr) <* zeroOrMoreSpaces

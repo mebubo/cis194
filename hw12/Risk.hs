@@ -23,18 +23,20 @@ die = getRandom
 
 dice :: Int -> Rand StdGen [DieValue]
 dice n = sequence $ replicate n die
+
 ------------------------------------------------------------
 -- Risk
 
 type Army = Int
 
 data Battlefield = Battlefield { attackers :: Army, defenders :: Army }
+  deriving Show
 
-decideStep :: (Int, Int) -> Battlefield -> Battlefield
-decideStep (att, def) bf =
+decideStep :: Battlefield -> (Int, Int) -> Battlefield
+decideStep bf (att, def) =
   if att > def
-  then bf { def = (def bf) - 1 }
-  else bf { att = (att bf) - 1 }
+  then bf { defenders = (defenders bf) - 1 }
+  else bf { attackers = (attackers bf) - 1 }
 
 battle :: Battlefield -> Rand StdGen Battlefield
 battle bf =
@@ -44,6 +46,6 @@ battle bf =
     do
       attackerDieValues <- dice nAttackers
       defenderDieValues <- dice nDefenders
-      let pairs = take 2 $ zip (sort attackerDieValues) (sort defenderDieValues)
-      foldl decideStep bf pairs
+      let pairs = take 2 $ zip (sort (map unDV attackerDieValues)) (sort (map unDV defenderDieValues))
+      return $ foldl decideStep bf pairs
 

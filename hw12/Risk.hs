@@ -3,6 +3,7 @@
 module Risk where
 
 import Control.Monad.Random
+import Data.List
 
 ------------------------------------------------------------
 -- Die values
@@ -20,6 +21,8 @@ instance Random DieValue where
 die :: Rand StdGen DieValue
 die = getRandom
 
+dice :: Int -> Rand StdGen [DieValue]
+dice n = sequence $ replicate n die
 ------------------------------------------------------------
 -- Risk
 
@@ -27,7 +30,20 @@ type Army = Int
 
 data Battlefield = Battlefield { attackers :: Army, defenders :: Army }
 
+decideStep :: (Int, Int) -> Battlefield -> Battlefield
+decideStep (att, def) bf =
+  if att > def
+  then bf { def = (def bf) - 1 }
+  else bf { att = (att bf) - 1 }
+
 battle :: Battlefield -> Rand StdGen Battlefield
 battle bf =
   let nAttackers = minimum [3, attackers bf - 1]
       nDefenders = minimum [2, defenders bf]
+  in
+    do
+      attackerDieValues <- dice nAttackers
+      defenderDieValues <- dice nDefenders
+      let pairs = take 2 $ zip (sort attackerDieValues) (sort defenderDieValues)
+      foldl decideStep bf pairs
+

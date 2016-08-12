@@ -47,3 +47,8 @@ battle bf =
   in
       computeBattlefield <$> dice nAttackers <*> dice nDefenders
 
+invade :: Battlefield -> Rand StdGen Battlefield
+invade bf@(Battlefield a d) =
+  if a < 2 || d <=0
+  then return bf
+  else battle bf >>= invade

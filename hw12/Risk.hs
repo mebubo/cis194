@@ -32,8 +32,8 @@ type Army = Int
 data Battlefield = Battlefield { attackers :: Army, defenders :: Army }
   deriving Show
 
-decideStep :: Battlefield -> (Int, Int) -> Battlefield
-decideStep bf (att, def) =
+decideStep :: Battlefield -> (DieValue, DieValue) -> Battlefield
+decideStep bf (DV att, DV def) =
   if att > def
   then bf { defenders = (defenders bf) - 1 }
   else bf { attackers = (attackers bf) - 1 }
@@ -46,6 +46,6 @@ battle bf =
     do
       attackerDieValues <- dice nAttackers
       defenderDieValues <- dice nDefenders
-      let pairs = take 2 $ zip (sort (map unDV attackerDieValues)) (sort (map unDV defenderDieValues))
+      let pairs = take 2 $ zip (sort attackerDieValues) (sort defenderDieValues)
       return $ foldl decideStep bf pairs
 

@@ -42,10 +42,8 @@ battle :: Battlefield -> Rand StdGen Battlefield
 battle bf =
   let nAttackers = minimum [3, attackers bf - 1]
       nDefenders = minimum [2, defenders bf]
+      getPairs attDice defDice = take 2 $ zip (sort attDice) (sort defDice)
+      computeBattlefield attDice defDice = foldl decideStep bf (getPairs attDice defDice)
   in
-    do
-      attackerDieValues <- dice nAttackers
-      defenderDieValues <- dice nDefenders
-      let pairs = take 2 $ zip (sort attackerDieValues) (sort defenderDieValues)
-      return $ foldl decideStep bf pairs
+      computeBattlefield <$> dice nAttackers <*> dice nDefenders
 

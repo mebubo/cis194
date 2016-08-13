@@ -39,10 +39,11 @@ decideStep bf (DV att, DV def) =
   else bf { attackers = (attackers bf) - 1 }
 
 battle :: Battlefield -> Rand StdGen Battlefield
-battle bf =
-  let nAttackers = minimum [3, attackers bf - 1]
-      nDefenders = minimum [2, defenders bf]
-      getPairs attDice defDice = take 2 $ zip (sort attDice) (sort defDice)
+battle bf@(Battlefield a d) =
+  let nAttackers = minimum [3, a - 1]
+      nDefenders = minimum [2, d]
+      sortDesc = reverse . sort
+      getPairs attDice defDice = take 2 $ zip (sortDesc attDice) (sortDesc defDice)
       computeBattlefield attDice defDice = foldl decideStep bf (getPairs attDice defDice)
   in
       computeBattlefield <$> dice nAttackers <*> dice nDefenders

@@ -49,6 +49,21 @@ battle bf =
 
 invade :: Battlefield -> Rand StdGen Battlefield
 invade bf@(Battlefield a d) =
-  if a < 2 || d <=0
+  if a <= 1 || d <=0
   then return bf
   else battle bf >>= invade
+
+invasions :: Int -> Battlefield -> Rand StdGen [Battlefield]
+invasions n bf = sequence $ replicate n $ invade bf
+
+attackerWon :: Battlefield -> Bool
+attackerWon (Battlefield att def) = def <= 0
+
+averageWins :: [Battlefield] -> Double
+averageWins bfs = won / total
+  where
+    total = fromIntegral $ length bfs
+    won = fromIntegral $ length $ filter attackerWon bfs
+
+successProb :: Battlefield -> Rand StdGen Double
+successProb bf = averageWins <$> invasions 1000 bf
